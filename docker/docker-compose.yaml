@@ -1,0 +1,37 @@
+version: '3.5'
+services:
+  php:
+    build:
+      context: ./deploy/php
+      dockerfile: Dockerfile-dev
+    container_name: "php-smarty-lab"
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - Smarty-Lab
+    volumes:
+      - "../:/data"
+      - ./deploy/php/php.ini:/usr/local/etc/php/php.ini
+      - ./deploy/php/docker-php-ext-xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./deploy/nginx/Dockerfile
+    container_name: "nginx-smarty-lab"
+    restart: unless-stopped
+    networks:
+      - Smarty-Lab
+    ports:
+      - "127.0.0.1:6233:80"
+    depends_on:
+      - php
+    volumes:
+      - ./deploy/nginx/conf:/etc/nginx/conf.d/
+      - "../:/data"
+
+networks:
+  Smarty-Lab:
+    external: true
+    name: serv
